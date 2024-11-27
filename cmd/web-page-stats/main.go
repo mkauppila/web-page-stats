@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mkauppila/web-page-stats/api"
+	"github.com/mkauppila/web-page-stats/internal/api"
 	"net/http"
 )
 
