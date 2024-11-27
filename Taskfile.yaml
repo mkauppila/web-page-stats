@@ -1,0 +1,18 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GOOSE: go run github.com/pressly/goose/cmd/goose@latest
+
+tasks:
+  goose-new:
+      - GOOSE -dir ./migrations/ sqlite3 ./database.db create {{.CLI_ARGS}} sql
+
+  goose-up:
+      - GOOSE -dir ./migrations/ sqlite3 ./database.db up
+
+  goose-down:
+      - GOOSE -dir ./migrations/ sqlite3 ./database.db down
+
+
