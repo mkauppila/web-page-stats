@@ -1,9 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE count (
-  category text,
-  slug text,
-  type text,
+  category text NOT NULL,
+  slug text NOT NULL,
+  type text CHECK(type IN ('articles','snippets')) NOT NULL,
+  count integer CHECK(count >0) NOT NULL,
   PRIMARY KEY(category, slug)
 );
 -- +goose StatementEnd
