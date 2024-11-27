@@ -12,12 +12,12 @@ import (
 
 func main() {
 	fmt.Println("http server starting")
-	server := handler.NewHandler()
 
-	r := http.NewServeMux()
+	handler := handler.NewHandler()
+	mux := http.NewServeMux()
 
 	// get an `http.Handler` that we can use
-	h := api.HandlerFromMux(server, r)
+	h := api.HandlerFromMux(handler, mux)
 
 	s := &http.Server{
 		Handler: h,
