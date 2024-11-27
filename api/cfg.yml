@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=spec.yml
+package: api
+generate:
+  std-http-server: true
+  models: true
+output: api.go

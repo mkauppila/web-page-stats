@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  title: Views and Reactions API
+  version: 1.0.0
+  description: API to manage views and reactions for articles and snippets.
+paths:
+  /views/{category}/{slug}:
+    get:
+      summary: Get view count
+      description: Retrieve the number of views for the specified category and slug.
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: The category of the content.
+          schema:
+            type: string
+            enum: [articles, snippets]
+        - name: slug
+          in: path
+          required: true
+          description: The unique identifier of the content.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: View count retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  views:
+                    type: integer
+    put:
+      summary: Increment view count
+      description: Increment the view count for the specified category and slug.
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: The category of the content.
+          schema:
+            type: string
+            enum: [articles, snippets]
+        - name: slug
+          in: path
+          required: true
+          description: The unique identifier of the content.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: View count incremented successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  views:
+                    type: integer
+
+  /reactions/{category}/{slug}:
+    get:
+      summary: Get reaction counts
+      description: Retrieve the count for each reaction for the specified category and slug.
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: The category of the content.
+          schema:
+            type: string
+            enum: [articles, snippets]
+        - name: slug
+          in: path
+          required: true
+          description: The unique identifier of the content.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reaction counts retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  love:
+                    type: integer
+                  like:
+                    type: integer
+                  mindblown:
+                    type: integer
+                  puzzling:
+                    type: integer
+
+  /reactions/{reaction}/{category}/{slug}:
+    put:
+      summary: Increment reaction count
+      description: Increment the count for a specific reaction in the specified category and slug.
+      parameters:
+        - name: reaction
+          in: path
+          required: true
+          description: The reaction type.
+          schema:
+            type: string
+            enum: [love, like, mindblown, puzzling]
+        - name: category
+          in: path
+          required: true
+          description: The category of the content.
+          schema:
+            type: string
+            enum: [articles, snippets]
+        - name: slug
+          in: path
+          required: true
+          description: The unique identifier of the content.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reaction count incremented successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  love:
+                    type: integer
+                  like:
+                    type: integer
+                  mindblown:
+                    type: integer
+                  puzzling:
+                    type: integer
