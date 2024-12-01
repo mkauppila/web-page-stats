@@ -7,6 +7,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func CreateConnection(file string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", file)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
 type Database struct {
 	conn *sql.DB
 }

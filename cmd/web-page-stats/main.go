@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/mkauppila/web-page-stats/internal/api"
+	"github.com/mkauppila/web-page-stats/internal/counters"
 	"github.com/mkauppila/web-page-stats/internal/database"
 	"github.com/mkauppila/web-page-stats/internal/handler"
 )
@@ -14,13 +15,19 @@ import (
 func main() {
 	fmt.Println("http server starting")
 
-	handler := handler.NewHandler(nil, nil)
-	mux := http.NewServeMux()
-	db, err := database.NewDatabase()
+	db, err := database.CreateConnection("database.db")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	db.Buu()
+	vc := counters.CreateViewCounter(db)
+
+	handler := handler.NewHandler(vc, nil)
+	mux := http.NewServeMux()
+	// db, err := database.NewDatabase()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// db.Buu()
 
 	// get an `http.Handler` that we can use
 	h := api.HandlerFromMux(handler, mux)
