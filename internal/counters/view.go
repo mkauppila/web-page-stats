@@ -29,13 +29,21 @@ func (v *ViewCounter) Update(category, slug string) (handler.ViewCount, error) {
 	sql := `
 		INSERT INTO view_count 
 			 VALUES (?, ?, 0)
-			ON CONFLICT (category, slug) DO
-	        UPDATE SET count=count + 1`
-	_, err := v.db.ExecContext(context.Background(), sql, category, slug)
+		ON CONFLICT (category, slug) DO
+  	         UPDATE SET count=count + 1
+	  	  RETURNING count`
+	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
 	if err != nil {
 		panic(err)
 	}
-	// TODO: return the values here
+	defer results.Close()
 
-	return handler.ViewCount{}, nil
+	var counts int
+	for results.Next() {
+		results.Scan(&counts)
+	}
+
+	return handler.ViewCount{
+		Count: counts,
+	}, nil
 }
