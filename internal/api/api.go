@@ -15,6 +15,10 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
+const (
+	BearerAuthScopes = "BearerAuth.Scopes"
+)
+
 // Defines values for PutReactionsParamsReaction.
 const (
 	Like      PutReactionsParamsReaction = "like"
@@ -83,6 +87,12 @@ func (siw *ServerInterfaceWrapper) GetReactions(w http.ResponseWriter, r *http.R
 
 	var err error
 
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetReactionsParams
 
@@ -116,6 +126,12 @@ func (siw *ServerInterfaceWrapper) GetReactions(w http.ResponseWriter, r *http.R
 func (siw *ServerInterfaceWrapper) PutReactions(w http.ResponseWriter, r *http.Request) {
 
 	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params PutReactionsParams
@@ -166,6 +182,12 @@ func (siw *ServerInterfaceWrapper) GetViews(w http.ResponseWriter, r *http.Reque
 
 	var err error
 
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetViewsParams
 
@@ -199,6 +221,12 @@ func (siw *ServerInterfaceWrapper) GetViews(w http.ResponseWriter, r *http.Reque
 func (siw *ServerInterfaceWrapper) PutViews(w http.ResponseWriter, r *http.Request) {
 
 	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params PutViewsParams
@@ -379,6 +407,14 @@ func (response GetReactions200JSONResponse) VisitGetReactionsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetReactions401Response struct {
+}
+
+func (response GetReactions401Response) VisitGetReactionsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type PutReactionsRequestObject struct {
 	Params PutReactionsParams
 }
@@ -401,6 +437,14 @@ func (response PutReactions200JSONResponse) VisitPutReactionsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutReactions401Response struct {
+}
+
+func (response PutReactions401Response) VisitPutReactionsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type GetViewsRequestObject struct {
 	Params GetViewsParams
 }
@@ -420,6 +464,14 @@ func (response GetViews200JSONResponse) VisitGetViewsResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetViews401Response struct {
+}
+
+func (response GetViews401Response) VisitGetViewsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
 type PutViewsRequestObject struct {
 	Params PutViewsParams
 }
@@ -437,6 +489,14 @@ func (response PutViews200JSONResponse) VisitPutViewsResponse(w http.ResponseWri
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PutViews401Response struct {
+}
+
+func (response PutViews401Response) VisitPutViewsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
 }
 
 // StrictServerInterface represents all server handlers.

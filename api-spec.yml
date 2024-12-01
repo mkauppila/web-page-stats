@@ -3,11 +3,28 @@ info:
   title: Views and Reactions API
   version: 1.0.0
   description: API to manage views and reactions for articles and snippets.
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: base64
+    
+    HTTPSOnly:
+      type: http
+      scheme: https
+
+security:
+  - BearerAuth: []
+
 paths:
   /views:
     get:
       summary: Get view count
       description: Retrieve the number of views for the specified path.
+      security:
+        - BearerAuth: []
       parameters:
         - name: path
           in: query
@@ -25,9 +42,14 @@ paths:
                 properties:
                   views:
                     type: integer
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
+
     put:
       summary: Increment view count
       description: Increment the view count for the specified path.
+      security:
+        - BearerAuth: []
       parameters:
         - name: path
           in: query
@@ -45,11 +67,15 @@ paths:
                 properties:
                   views:
                     type: integer
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
 
   /reactions:
     get:
       summary: Get reaction counts
       description: Retrieve the count for each reaction for the specified path.
+      security:
+        - BearerAuth: []
       parameters:
         - name: path
           in: query
@@ -73,10 +99,14 @@ paths:
                     type: integer
                   puzzling:
                     type: integer
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
 
     put:
       summary: Increment reaction count
       description: Increment the count for a specific reaction in the specified path.
+      security:
+        - BearerAuth: []
       parameters:
         - name: path
           in: query
@@ -107,3 +137,5 @@ paths:
                     type: integer
                   puzzling:
                     type: integer
+        '401':
+          description: Unauthorized - Invalid or missing authentication token
