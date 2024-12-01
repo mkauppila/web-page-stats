@@ -61,7 +61,7 @@ func (s Handler) GetReactionsCategorySlug(
 		w.WriteHeader(200)
 		json.NewEncoder(w).Encode(resp)
 	default:
-		w.WriteHeader(400)
+		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(resp)
 	}
 }
@@ -88,7 +88,7 @@ func (s Handler) PutReactionsReactionCategorySlug(
 		w.WriteHeader(201)
 		json.NewEncoder(w).Encode(resp)
 	default:
-		w.WriteHeader(400)
+		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(resp)
 	}
 }
@@ -111,7 +111,7 @@ func (s Handler) GetViewsCategorySlug(
 		w.WriteHeader(200)
 		json.NewEncoder(w).Encode(resp)
 	default:
-		w.WriteHeader(400)
+		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(resp)
 	}
 }
@@ -134,7 +134,7 @@ func (s Handler) PutViewsCategorySlug(
 		w.WriteHeader(201)
 		json.NewEncoder(w).Encode(resp)
 	default:
-		w.WriteHeader(400)
+		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(resp)
 	}
 }
