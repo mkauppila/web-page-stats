@@ -20,8 +20,9 @@ func main() {
 		panic(err)
 	}
 	vc := counters.CreateViewCounter(db)
+	rc := counters.CreateReactionCounter(db)
 
-	handler := handler.NewHandler(vc, nil)
+	handler := handler.NewHandler(vc, rc)
 	mux := http.NewServeMux()
 	// db, err := database.NewDatabase()
 	// if err != nil {

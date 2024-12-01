@@ -76,6 +76,9 @@ func (s Handler) PutReactionsReactionCategorySlug(
 	slug string,
 ) {
 	counts, err := s.reactions.Update(string(category), slug, string(reaction))
+	if err != nil {
+		panic(err)
+	}
 	resp := api.PutReactionsReactionCategorySlug200JSONResponse{
 		Like:      &counts.Like,
 		Love:      &counts.Love,
