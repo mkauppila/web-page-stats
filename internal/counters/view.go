@@ -24,15 +24,13 @@ func (v *ViewCounter) GetCount(category, slug string) (handler.ViewCount, error)
   		  FROM view_count 
          WHERE category = ?
 	       AND slug = ?`
-	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
-	if err != nil {
-		return handler.ViewCount{}, fmt.Errorf("viewCounter.GetCount: %w", err)
-	}
-	defer results.Close()
 
 	var counts int
-	for results.Next() {
-		results.Scan(&counts)
+	err := v.db.
+		QueryRowContext(context.Background(), sql, category, slug).
+		Scan(&counts)
+	if err != nil {
+		return handler.ViewCount{}, fmt.Errorf("viewCounter.GetCount: %w", err)
 	}
 
 	return handler.ViewCount{
@@ -47,15 +45,13 @@ func (v *ViewCounter) Update(category, slug string) (handler.ViewCount, error) {
 		ON CONFLICT (category, slug) DO
   	         UPDATE SET count=count + 1
 	  	  RETURNING count`
-	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
-	if err != nil {
-		return handler.ViewCount{}, fmt.Errorf("viewCounter.Update: %w", err)
-	}
-	defer results.Close()
 
 	var counts int
-	for results.Next() {
-		results.Scan(&counts)
+	err := v.db.
+		QueryRowContext(context.Background(), sql, category, slug).
+		Scan(&counts)
+	if err != nil {
+		return handler.ViewCount{}, fmt.Errorf("viewCounter.Update: %w", err)
 	}
 
 	return handler.ViewCount{

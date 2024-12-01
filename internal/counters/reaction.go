@@ -28,15 +28,12 @@ func (v *ReactionCounter) GetCount(category, slug string) (handler.ReactionCount
          WHERE category = ?
 	       AND slug = ?`
 
-	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
+	var love, like, mindblown, puzzling int
+	err := v.db.
+		QueryRowContext(context.Background(), sql, category, slug).
+		Scan(&love, &like, &mindblown, &puzzling)
 	if err != nil {
 		return handler.ReactionCounts{}, fmt.Errorf("ReactionCounter.GetCount: %w", err)
-	}
-	defer results.Close()
-
-	var love, like, mindblown, puzzling int
-	for results.Next() {
-		results.Scan(&love, &like, &mindblown, &puzzling)
 	}
 
 	return handler.ReactionCounts{
@@ -60,15 +57,12 @@ func (v *ReactionCounter) Update(category, slug, reaction string) (handler.React
 		sql = puzzlingQuery()
 	}
 
-	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
+	var love, like, mindblown, puzzling int
+	err := v.db.QueryRowContext(context.Background(), sql, category, slug).
+		Scan(&love, &like, &mindblown, &puzzling)
+
 	if err != nil {
 		return handler.ReactionCounts{}, fmt.Errorf("viewCounter.Update: %w", err)
-	}
-	defer results.Close()
-
-	var love, like, mindblown, puzzling int
-	for results.Next() {
-		results.Scan(&love, &like, &mindblown, &puzzling)
 	}
 
 	return handler.ReactionCounts{
