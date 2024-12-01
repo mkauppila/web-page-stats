@@ -6,10 +6,13 @@
 package api
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/oapi-codegen/runtime"
+	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
 // Defines values for GetReactionsCategorySlugParamsCategory.
@@ -355,4 +358,245 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("PUT "+options.BaseURL+"/views/{category}/{slug}", wrapper.PutViewsCategorySlug)
 
 	return m
+}
+
+type GetReactionsCategorySlugRequestObject struct {
+	Category GetReactionsCategorySlugParamsCategory `json:"category"`
+	Slug     string                                 `json:"slug"`
+}
+
+type GetReactionsCategorySlugResponseObject interface {
+	VisitGetReactionsCategorySlugResponse(w http.ResponseWriter) error
+}
+
+type GetReactionsCategorySlug200JSONResponse struct {
+	Like      *int `json:"like,omitempty"`
+	Love      *int `json:"love,omitempty"`
+	Mindblown *int `json:"mindblown,omitempty"`
+	Puzzling  *int `json:"puzzling,omitempty"`
+}
+
+func (response GetReactionsCategorySlug200JSONResponse) VisitGetReactionsCategorySlugResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutReactionsReactionCategorySlugRequestObject struct {
+	Reaction PutReactionsReactionCategorySlugParamsReaction `json:"reaction"`
+	Category PutReactionsReactionCategorySlugParamsCategory `json:"category"`
+	Slug     string                                         `json:"slug"`
+}
+
+type PutReactionsReactionCategorySlugResponseObject interface {
+	VisitPutReactionsReactionCategorySlugResponse(w http.ResponseWriter) error
+}
+
+type PutReactionsReactionCategorySlug200JSONResponse struct {
+	Like      *int `json:"like,omitempty"`
+	Love      *int `json:"love,omitempty"`
+	Mindblown *int `json:"mindblown,omitempty"`
+	Puzzling  *int `json:"puzzling,omitempty"`
+}
+
+func (response PutReactionsReactionCategorySlug200JSONResponse) VisitPutReactionsReactionCategorySlugResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetViewsCategorySlugRequestObject struct {
+	Category GetViewsCategorySlugParamsCategory `json:"category"`
+	Slug     string                             `json:"slug"`
+}
+
+type GetViewsCategorySlugResponseObject interface {
+	VisitGetViewsCategorySlugResponse(w http.ResponseWriter) error
+}
+
+type GetViewsCategorySlug200JSONResponse struct {
+	Views *int `json:"views,omitempty"`
+}
+
+func (response GetViewsCategorySlug200JSONResponse) VisitGetViewsCategorySlugResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutViewsCategorySlugRequestObject struct {
+	Category PutViewsCategorySlugParamsCategory `json:"category"`
+	Slug     string                             `json:"slug"`
+}
+
+type PutViewsCategorySlugResponseObject interface {
+	VisitPutViewsCategorySlugResponse(w http.ResponseWriter) error
+}
+
+type PutViewsCategorySlug200JSONResponse struct {
+	Views *int `json:"views,omitempty"`
+}
+
+func (response PutViewsCategorySlug200JSONResponse) VisitPutViewsCategorySlugResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+	// Get reaction counts
+	// (GET /reactions/{category}/{slug})
+	GetReactionsCategorySlug(ctx context.Context, request GetReactionsCategorySlugRequestObject) (GetReactionsCategorySlugResponseObject, error)
+	// Increment reaction count
+	// (PUT /reactions/{reaction}/{category}/{slug})
+	PutReactionsReactionCategorySlug(ctx context.Context, request PutReactionsReactionCategorySlugRequestObject) (PutReactionsReactionCategorySlugResponseObject, error)
+	// Get view count
+	// (GET /views/{category}/{slug})
+	GetViewsCategorySlug(ctx context.Context, request GetViewsCategorySlugRequestObject) (GetViewsCategorySlugResponseObject, error)
+	// Increment view count
+	// (PUT /views/{category}/{slug})
+	PutViewsCategorySlug(ctx context.Context, request PutViewsCategorySlugRequestObject) (PutViewsCategorySlugResponseObject, error)
+}
+
+type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
+type StrictMiddlewareFunc = strictnethttp.StrictHTTPMiddlewareFunc
+
+type StrictHTTPServerOptions struct {
+	RequestErrorHandlerFunc  func(w http.ResponseWriter, r *http.Request, err error)
+	ResponseErrorHandlerFunc func(w http.ResponseWriter, r *http.Request, err error)
+}
+
+func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
+	}}
+}
+
+func NewStrictHandlerWithOptions(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc, options StrictHTTPServerOptions) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: options}
+}
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+	options     StrictHTTPServerOptions
+}
+
+// GetReactionsCategorySlug operation middleware
+func (sh *strictHandler) GetReactionsCategorySlug(w http.ResponseWriter, r *http.Request, category GetReactionsCategorySlugParamsCategory, slug string) {
+	var request GetReactionsCategorySlugRequestObject
+
+	request.Category = category
+	request.Slug = slug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetReactionsCategorySlug(ctx, request.(GetReactionsCategorySlugRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetReactionsCategorySlug")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetReactionsCategorySlugResponseObject); ok {
+		if err := validResponse.VisitGetReactionsCategorySlugResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutReactionsReactionCategorySlug operation middleware
+func (sh *strictHandler) PutReactionsReactionCategorySlug(w http.ResponseWriter, r *http.Request, reaction PutReactionsReactionCategorySlugParamsReaction, category PutReactionsReactionCategorySlugParamsCategory, slug string) {
+	var request PutReactionsReactionCategorySlugRequestObject
+
+	request.Reaction = reaction
+	request.Category = category
+	request.Slug = slug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PutReactionsReactionCategorySlug(ctx, request.(PutReactionsReactionCategorySlugRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutReactionsReactionCategorySlug")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PutReactionsReactionCategorySlugResponseObject); ok {
+		if err := validResponse.VisitPutReactionsReactionCategorySlugResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetViewsCategorySlug operation middleware
+func (sh *strictHandler) GetViewsCategorySlug(w http.ResponseWriter, r *http.Request, category GetViewsCategorySlugParamsCategory, slug string) {
+	var request GetViewsCategorySlugRequestObject
+
+	request.Category = category
+	request.Slug = slug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetViewsCategorySlug(ctx, request.(GetViewsCategorySlugRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetViewsCategorySlug")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetViewsCategorySlugResponseObject); ok {
+		if err := validResponse.VisitGetViewsCategorySlugResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutViewsCategorySlug operation middleware
+func (sh *strictHandler) PutViewsCategorySlug(w http.ResponseWriter, r *http.Request, category PutViewsCategorySlugParamsCategory, slug string) {
+	var request PutViewsCategorySlugRequestObject
+
+	request.Category = category
+	request.Slug = slug
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PutViewsCategorySlug(ctx, request.(PutViewsCategorySlugRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutViewsCategorySlug")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PutViewsCategorySlugResponseObject); ok {
+		if err := validResponse.VisitPutViewsCategorySlugResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }

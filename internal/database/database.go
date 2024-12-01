@@ -24,6 +24,9 @@ func NewDatabase() (*Database, error) {
 	return database, nil
 }
 
+// read view count (category, slug)
+// read reactions (category, slug)
+
 func (db *Database) Buu() {
 	type Row struct {
 		id   int

@@ -1,15 +1,43 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/mkauppila/web-page-stats/internal/api"
 )
 
-type Handler struct{}
+type ReactionCounts struct {
+	Like      int `json:"like"`
+	Love      int `json:"love"`
+	Mindblown int `json:"mindblown"`
+	Puzzling  int `json:"puzzling"`
+}
 
-func NewHandler() Handler {
-	return Handler{}
+type ViewCount struct {
+	Count int `json:"count"`
+}
+
+type Reactioner interface {
+	GetCount(category, slug string) (ReactionCounts, error)
+	Update(category, slug, reaction string) (ReactionCounts, error)
+}
+
+type Viewer interface {
+	GetCount(category, slug string) (ViewCount, error)
+	Update(category, slug string) (ViewCount, error)
+}
+
+type Handler struct {
+	views     Viewer
+	reactions Reactioner
+}
+
+func NewHandler(views Viewer, reactions Reactioner) Handler {
+	return Handler{
+		views:     views,
+		reactions: reactions,
+	}
 }
 
 // Get reaction counts
@@ -20,8 +48,22 @@ func (s Handler) GetReactionsCategorySlug(
 	category api.GetReactionsCategorySlugParamsCategory,
 	slug string,
 ) {
-	w.WriteHeader(200)
-	w.Write([]byte("/reactoins/{category}/{slug}"))
+	counts, err := s.reactions.GetCount(string(category), slug)
+	resp := api.GetReactionsCategorySlug200JSONResponse{
+		Like:      &counts.Like,
+		Love:      &counts.Love,
+		Mindblown: &counts.Mindblown,
+		Puzzling:  &counts.Puzzling,
+	}
+
+	switch err {
+	case nil:
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(resp)
+	default:
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(resp)
+	}
 }
 
 // Increment reaction count
@@ -33,6 +75,22 @@ func (s Handler) PutReactionsReactionCategorySlug(
 	category api.PutReactionsReactionCategorySlugParamsCategory,
 	slug string,
 ) {
+	counts, err := s.reactions.Update(string(category), slug, string(reaction))
+	resp := api.PutReactionsReactionCategorySlug200JSONResponse{
+		Like:      &counts.Like,
+		Love:      &counts.Love,
+		Mindblown: &counts.Mindblown,
+		Puzzling:  &counts.Puzzling,
+	}
+
+	switch err {
+	case nil:
+		w.WriteHeader(201)
+		json.NewEncoder(w).Encode(resp)
+	default:
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(resp)
+	}
 }
 
 // Get view count
@@ -43,8 +101,19 @@ func (s Handler) GetViewsCategorySlug(
 	category api.GetViewsCategorySlugParamsCategory,
 	slug string,
 ) {
-	w.WriteHeader(200)
-	w.Write([]byte("/view/category/slug"))
+	counts, err := s.views.GetCount(string(category), slug)
+	resp := api.GetViewsCategorySlug200JSONResponse{
+		Views: &counts.Count,
+	}
+
+	switch err {
+	case nil:
+		w.WriteHeader(200)
+		json.NewEncoder(w).Encode(resp)
+	default:
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(resp)
+	}
 }
 
 // Increment view count
@@ -55,5 +124,17 @@ func (s Handler) PutViewsCategorySlug(
 	category api.PutViewsCategorySlugParamsCategory,
 	slug string,
 ) {
-	w.WriteHeader(201)
+	counts, err := s.views.Update(string(category), slug)
+	resp := api.PutViewsCategorySlug200JSONResponse{
+		Views: &counts.Count,
+	}
+
+	switch err {
+	case nil:
+		w.WriteHeader(201)
+		json.NewEncoder(w).Encode(resp)
+	default:
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(resp)
+	}
 }

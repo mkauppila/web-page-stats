@@ -14,7 +14,7 @@ import (
 func main() {
 	fmt.Println("http server starting")
 
-	handler := handler.NewHandler()
+	handler := handler.NewHandler(nil, nil)
 	mux := http.NewServeMux()
 	db, err := database.NewDatabase()
 	if err != nil {
