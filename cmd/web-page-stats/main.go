@@ -28,7 +28,12 @@ func main() {
 	handler := handler.NewHandler(vc, rc)
 
 	mux := http.NewServeMux()
-	si := api.NewStrictHandler(handler, nil)
+	si := api.NewStrictHandler(
+		handler,
+		[]api.StrictMiddlewareFunc{
+			api.CreateAuthMiddleWare(os.Getenv("AUTH_TOKEN")),
+			api.CreateRequestLogger(),
+		})
 	hmux := api.HandlerFromMux(si, mux)
 
 	s := &http.Server{
