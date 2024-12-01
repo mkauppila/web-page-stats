@@ -25,15 +25,14 @@ func main() {
 	}
 	vc := counters.CreateViewCounter(db)
 	rc := counters.CreateReactionCounter(db)
-
 	handler := handler.NewHandler(vc, rc)
-	handler := handler.NewHandler(vc, rc, "auth-token")
-	mux := http.NewServeMux()
 
-	h := api.HandlerFromMux(handler, mux)
+	mux := http.NewServeMux()
+	si := api.NewStrictHandler(handler, nil)
+	hmux := api.HandlerFromMux(si, mux)
 
 	s := &http.Server{
-		Handler: h,
+		Handler: hmux,
 		Addr:    "0.0.0.0:8080",
 	}
 

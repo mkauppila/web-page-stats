@@ -2,9 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 
 	"github.com/mkauppila/web-page-stats/internal/api"
 )
@@ -30,149 +27,71 @@ type Viewer interface {
 	Update(ctx context.Context, path string) (ViewCount, error)
 }
 
-func naiveAuthVerifier(r *http.Request, validToken string) bool {
-	bearer := r.Header.Get("Authorization")
-	return bearer == "Bearer "+validToken
-}
-
 type Handler struct {
 	views     Viewer
 	reactions Reactioner
 	authToken string
 }
 
-var _ api.ServerInterface = Handler{}
-
-func NewHandler(views Viewer, reactions Reactioner, authToken string) Handler {
+func NewHandler(views Viewer, reactions Reactioner) Handler {
 	return Handler{
 		views:     views,
 		reactions: reactions,
-		authToken: authToken,
+		authToken: "",
 	}
 }
+
+var _ api.StrictServerInterface = Handler{}
 
 func (s Handler) GetReactions(
-	w http.ResponseWriter,
-	r *http.Request,
-	params api.GetReactionsParams,
-) {
-	if !naiveAuthVerifier(r, s.authToken) {
-		w.WriteHeader(403)
-		return
-	}
-
-	counts, err := s.reactions.GetCount(
-		r.Context(),
-		string(params.Path),
-	)
+	ctx context.Context,
+	request api.GetReactionsRequestObject,
+) (api.GetReactionsResponseObject, error) {
+	counts, err := s.reactions.GetCount(ctx, request.Params.Path)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
-	resp := api.GetReactions200JSONResponse{
+	return api.GetReactions200JSONResponse{
 		Like:      &counts.Like,
 		Love:      &counts.Love,
 		Mindblown: &counts.Mindblown,
 		Puzzling:  &counts.Puzzling,
-	}
-
-	switch err {
-	case nil:
-		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(resp)
-	default:
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(resp)
-	}
+	}, nil
 }
 
-func (s Handler) PutReactions(
-	w http.ResponseWriter,
-	r *http.Request,
-	params api.PutReactionsParams,
-) {
-	if !naiveAuthVerifier(r, s.authToken) {
-		w.WriteHeader(403)
-		return
+func (s Handler) PutReactions(ctx context.Context, request api.PutReactionsRequestObject) (api.PutReactionsResponseObject, error) {
+	counts, err := s.reactions.Update(ctx, request.Params.Path, string(request.Params.Reaction))
+	if err != nil {
+		return nil, err
 	}
 
-	counts, err := s.reactions.Update(
-		r.Context(),
-		string(params.Path),
-		string(params.Reaction),
-	)
-	if err != nil {
-		panic(err)
-	}
-	resp := api.PutReactions200JSONResponse{
+	return api.PutReactions200JSONResponse{
 		Like:      &counts.Like,
 		Love:      &counts.Love,
 		Mindblown: &counts.Mindblown,
 		Puzzling:  &counts.Puzzling,
-	}
-
-	switch err {
-	case nil:
-		w.WriteHeader(201)
-		json.NewEncoder(w).Encode(resp)
-	default:
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(resp)
-	}
+	}, nil
 }
 
-func (s Handler) GetViews(
-	w http.ResponseWriter,
-	r *http.Request,
-	params api.GetViewsParams,
-) {
-	if !naiveAuthVerifier(r, s.authToken) {
-		w.WriteHeader(403)
-		return
+func (s Handler) GetViews(ctx context.Context, request api.GetViewsRequestObject) (api.GetViewsResponseObject, error) {
+	counts, err := s.views.GetCount(ctx, request.Params.Path)
+	if err != nil {
+		return nil, err
 	}
 
-	counts, err := s.views.GetCount(
-		r.Context(),
-		string(params.Path),
-	)
-	resp := api.GetViews200JSONResponse{
+	return api.GetViews200JSONResponse{
 		Views: &counts.Count,
-	}
-
-	switch err {
-	case nil:
-		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(resp)
-	default:
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(resp)
-	}
+	}, err
 }
 
-func (s Handler) PutViews(
-	w http.ResponseWriter,
-	r *http.Request,
-	params api.PutViewsParams,
-) {
-	if !naiveAuthVerifier(r, s.authToken) {
-		w.WriteHeader(403)
-		return
+func (s Handler) PutViews(ctx context.Context, request api.PutViewsRequestObject) (api.PutViewsResponseObject, error) {
+	counts, err := s.views.Update(ctx, request.Params.Path)
+	if err != nil {
+		return nil, err
 	}
 
-	counts, err := s.views.Update(
-		r.Context(),
-		string(params.Path),
-	)
-	resp := api.PutViews200JSONResponse{
+	return api.PutViews200JSONResponse{
 		Views: &counts.Count,
-	}
-
-	switch err {
-	case nil:
-		w.WriteHeader(201)
-		json.NewEncoder(w).Encode(resp)
-	default:
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(resp)
-	}
+	}, err
 }
