@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"net/http"
 
@@ -15,7 +16,10 @@ import (
 func main() {
 	fmt.Println("http server starting")
 
-	db, err := database.CreateConnection("database.db")
+	dbUrl := os.Getenv("DATABASE_URL")
+	fmt.Println("database url:", dbUrl)
+
+	db, err := database.CreateConnection(dbUrl)
 	if err != nil {
 		panic(err)
 	}
