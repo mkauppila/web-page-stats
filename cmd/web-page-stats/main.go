@@ -27,6 +27,7 @@ func main() {
 	rc := counters.CreateReactionCounter(db)
 
 	handler := handler.NewHandler(vc, rc)
+	handler := handler.NewHandler(vc, rc, "auth-token")
 	mux := http.NewServeMux()
 
 	h := api.HandlerFromMux(handler, mux)

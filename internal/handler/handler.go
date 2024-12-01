@@ -30,17 +30,24 @@ type Viewer interface {
 	Update(ctx context.Context, path string) (ViewCount, error)
 }
 
+func naiveAuthVerifier(r *http.Request, validToken string) bool {
+	bearer := r.Header.Get("Authorization")
+	return bearer == "Bearer "+validToken
+}
+
 type Handler struct {
 	views     Viewer
 	reactions Reactioner
+	authToken string
 }
 
 var _ api.ServerInterface = Handler{}
 
-func NewHandler(views Viewer, reactions Reactioner) Handler {
+func NewHandler(views Viewer, reactions Reactioner, authToken string) Handler {
 	return Handler{
 		views:     views,
 		reactions: reactions,
+		authToken: authToken,
 	}
 }
 
@@ -49,6 +56,11 @@ func (s Handler) GetReactions(
 	r *http.Request,
 	params api.GetReactionsParams,
 ) {
+	if !naiveAuthVerifier(r, s.authToken) {
+		w.WriteHeader(403)
+		return
+	}
+
 	counts, err := s.reactions.GetCount(
 		r.Context(),
 		string(params.Path),
@@ -79,6 +91,11 @@ func (s Handler) PutReactions(
 	r *http.Request,
 	params api.PutReactionsParams,
 ) {
+	if !naiveAuthVerifier(r, s.authToken) {
+		w.WriteHeader(403)
+		return
+	}
+
 	counts, err := s.reactions.Update(
 		r.Context(),
 		string(params.Path),
@@ -109,6 +126,11 @@ func (s Handler) GetViews(
 	r *http.Request,
 	params api.GetViewsParams,
 ) {
+	if !naiveAuthVerifier(r, s.authToken) {
+		w.WriteHeader(403)
+		return
+	}
+
 	counts, err := s.views.GetCount(
 		r.Context(),
 		string(params.Path),
@@ -132,6 +154,11 @@ func (s Handler) PutViews(
 	r *http.Request,
 	params api.PutViewsParams,
 ) {
+	if !naiveAuthVerifier(r, s.authToken) {
+		w.WriteHeader(403)
+		return
+	}
+
 	counts, err := s.views.Update(
 		r.Context(),
 		string(params.Path),
