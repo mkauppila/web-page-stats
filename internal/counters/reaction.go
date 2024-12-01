@@ -40,10 +40,42 @@ func (v *ReactionCounter) GetCount(category, slug string) (handler.ReactionCount
 	}
 
 	return handler.ReactionCounts{
-		Like:      0,
-		Love:      0,
-		Mindblown: 0,
-		Puzzling:  0,
+		Like:      like,
+		Love:      love,
+		Mindblown: mindblown,
+		Puzzling:  puzzling,
+	}, nil
+}
+
+func (v *ReactionCounter) Update(category, slug, reaction string) (handler.ReactionCounts, error) {
+	var sql string
+	switch reaction {
+	case "love":
+		sql = loveQuery()
+	case "like":
+		sql = likeQuery()
+	case "mindblown":
+		sql = mindblownQuery()
+	case "puzzling":
+		sql = puzzlingQuery()
+	}
+
+	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
+	if err != nil {
+		return handler.ReactionCounts{}, fmt.Errorf("viewCounter.Update: %w", err)
+	}
+	defer results.Close()
+
+	var love, like, mindblown, puzzling int
+	for results.Next() {
+		results.Scan(&love, &like, &mindblown, &puzzling)
+	}
+
+	return handler.ReactionCounts{
+		Like:      like,
+		Love:      love,
+		Mindblown: mindblown,
+		Puzzling:  puzzling,
 	}, nil
 }
 
@@ -77,36 +109,4 @@ func puzzlingQuery() string {
    	   ON CONFLICT (category, slug) DO
 	    UPDATE SET puzzling=puzzling + 1
 	     RETURNING love, like, mindblown, puzzling`
-}
-
-func (v *ReactionCounter) Update(category, slug, reaction string) (handler.ReactionCounts, error) {
-	var sql string
-	switch reaction {
-	case "love":
-		sql = loveQuery()
-	case "like":
-		sql = likeQuery()
-	case "mindblown":
-		sql = mindblownQuery()
-	case "puzzling":
-		sql = puzzlingQuery()
-	}
-
-	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
-	if err != nil {
-		return handler.ReactionCounts{}, fmt.Errorf("viewCounter.Update: %w", err)
-	}
-	defer results.Close()
-
-	var love, like, mindblown, puzzling int
-	for results.Next() {
-		results.Scan(&love, &like, &mindblown, &puzzling)
-	}
-
-	return handler.ReactionCounts{
-		Like:      like,
-		Love:      love,
-		Mindblown: mindblown,
-		Puzzling:  puzzling,
-	}, nil
 }
