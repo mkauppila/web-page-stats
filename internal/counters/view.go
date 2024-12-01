@@ -18,16 +18,15 @@ func CreateViewCounter(db *sql.DB) *ViewCounter {
 	}
 }
 
-func (v *ViewCounter) GetCount(ctx context.Context, category, slug string) (handler.ViewCount, error) {
+func (v *ViewCounter) GetCount(ctx context.Context, path string) (handler.ViewCount, error) {
 	sql := `
 		SELECT count 
   		  FROM view_count 
-         WHERE category = ?
-	       AND slug = ?`
+         WHERE path = ?`
 
 	var counts int
 	err := v.db.
-		QueryRowContext(ctx, sql, category, slug).
+		QueryRowContext(ctx, sql, path).
 		Scan(&counts)
 	if err != nil {
 		return handler.ViewCount{}, fmt.Errorf("viewCounter.GetCount: %w", err)
@@ -38,17 +37,17 @@ func (v *ViewCounter) GetCount(ctx context.Context, category, slug string) (hand
 	}, nil
 }
 
-func (v *ViewCounter) Update(ctx context.Context, category, slug string) (handler.ViewCount, error) {
+func (v *ViewCounter) Update(ctx context.Context, path string) (handler.ViewCount, error) {
 	sql := `
 		INSERT INTO view_count 
-			 VALUES (?, ?, 1)
-		ON CONFLICT (category, slug) DO
+			 VALUES (?, 1)
+		ON CONFLICT (path) DO
   	         UPDATE SET count=count + 1
 	  	  RETURNING count`
 
 	var counts int
 	err := v.db.
-		QueryRowContext(ctx, sql, category, slug).
+		QueryRowContext(ctx, sql, path).
 		Scan(&counts)
 	if err != nil {
 		return handler.ViewCount{}, fmt.Errorf("viewCounter.Update: %w", err)

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/mkauppila/web-page-stats/internal/api"
@@ -20,19 +21,21 @@ type ViewCount struct {
 }
 
 type Reactioner interface {
-	GetCount(ctx context.Context, category, slug string) (ReactionCounts, error)
-	Update(ctx context.Context, category, slug, reaction string) (ReactionCounts, error)
+	GetCount(ctx context.Context, path string) (ReactionCounts, error)
+	Update(ctx context.Context, path, reaction string) (ReactionCounts, error)
 }
 
 type Viewer interface {
-	GetCount(ctx context.Context, category, slug string) (ViewCount, error)
-	Update(ctx context.Context, category, slug string) (ViewCount, error)
+	GetCount(ctx context.Context, path string) (ViewCount, error)
+	Update(ctx context.Context, path string) (ViewCount, error)
 }
 
 type Handler struct {
 	views     Viewer
 	reactions Reactioner
 }
+
+var _ api.ServerInterface = Handler{}
 
 func NewHandler(views Viewer, reactions Reactioner) Handler {
 	return Handler{
@@ -41,16 +44,20 @@ func NewHandler(views Viewer, reactions Reactioner) Handler {
 	}
 }
 
-// Get reaction counts
-// (GET /reactions/{category}/{slug})
-func (s Handler) GetReactionsCategorySlug(
+func (s Handler) GetReactions(
 	w http.ResponseWriter,
 	r *http.Request,
-	category api.GetReactionsCategorySlugParamsCategory,
-	slug string,
+	params api.GetReactionsParams,
 ) {
-	counts, err := s.reactions.GetCount(r.Context(), string(category), slug)
-	resp := api.GetReactionsCategorySlug200JSONResponse{
+	counts, err := s.reactions.GetCount(
+		r.Context(),
+		string(params.Path),
+	)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	resp := api.GetReactions200JSONResponse{
 		Like:      &counts.Like,
 		Love:      &counts.Love,
 		Mindblown: &counts.Mindblown,
@@ -67,20 +74,20 @@ func (s Handler) GetReactionsCategorySlug(
 	}
 }
 
-// Increment reaction count
-// (PUT /reactions/{reaction}/{category}/{slug})
-func (s Handler) PutReactionsReactionCategorySlug(
+func (s Handler) PutReactions(
 	w http.ResponseWriter,
 	r *http.Request,
-	reaction api.PutReactionsReactionCategorySlugParamsReaction,
-	category api.PutReactionsReactionCategorySlugParamsCategory,
-	slug string,
+	params api.PutReactionsParams,
 ) {
-	counts, err := s.reactions.Update(r.Context(), string(category), slug, string(reaction))
+	counts, err := s.reactions.Update(
+		r.Context(),
+		string(params.Path),
+		string(params.Reaction),
+	)
 	if err != nil {
 		panic(err)
 	}
-	resp := api.PutReactionsReactionCategorySlug200JSONResponse{
+	resp := api.PutReactions200JSONResponse{
 		Like:      &counts.Like,
 		Love:      &counts.Love,
 		Mindblown: &counts.Mindblown,
@@ -97,16 +104,16 @@ func (s Handler) PutReactionsReactionCategorySlug(
 	}
 }
 
-// Get view count
-// (GET /views/{category}/{slug})
-func (s Handler) GetViewsCategorySlug(
+func (s Handler) GetViews(
 	w http.ResponseWriter,
 	r *http.Request,
-	category api.GetViewsCategorySlugParamsCategory,
-	slug string,
+	params api.GetViewsParams,
 ) {
-	counts, err := s.views.GetCount(r.Context(), string(category), slug)
-	resp := api.GetViewsCategorySlug200JSONResponse{
+	counts, err := s.views.GetCount(
+		r.Context(),
+		string(params.Path),
+	)
+	resp := api.GetViews200JSONResponse{
 		Views: &counts.Count,
 	}
 
@@ -120,16 +127,16 @@ func (s Handler) GetViewsCategorySlug(
 	}
 }
 
-// Increment view count
-// (PUT /views/{category}/{slug})
-func (s Handler) PutViewsCategorySlug(
+func (s Handler) PutViews(
 	w http.ResponseWriter,
 	r *http.Request,
-	category api.PutViewsCategorySlugParamsCategory,
-	slug string,
+	params api.PutViewsParams,
 ) {
-	counts, err := s.views.Update(r.Context(), string(category), slug)
-	resp := api.PutViewsCategorySlug200JSONResponse{
+	counts, err := s.views.Update(
+		r.Context(),
+		string(params.Path),
+	)
+	resp := api.PutViews200JSONResponse{
 		Views: &counts.Count,
 	}
 

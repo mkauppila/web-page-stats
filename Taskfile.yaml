@@ -15,4 +15,12 @@ tasks:
   goose-down:
       - GOOSE -dir ./migrations/ sqlite3 ./database.db down
 
+  docker-build:
+     - docker build . -t web-stats:latest
+
+  docker-run:
+     - docker run -it web-stats:latest
+
+
+
 

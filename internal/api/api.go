@@ -15,67 +15,58 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
-// Defines values for GetReactionsCategorySlugParamsCategory.
+// Defines values for PutReactionsParamsReaction.
 const (
-	GetReactionsCategorySlugParamsCategoryArticles GetReactionsCategorySlugParamsCategory = "articles"
-	GetReactionsCategorySlugParamsCategorySnippets GetReactionsCategorySlugParamsCategory = "snippets"
+	Like      PutReactionsParamsReaction = "like"
+	Love      PutReactionsParamsReaction = "love"
+	Mindblown PutReactionsParamsReaction = "mindblown"
+	Puzzling  PutReactionsParamsReaction = "puzzling"
 )
 
-// Defines values for PutReactionsReactionCategorySlugParamsReaction.
-const (
-	Like      PutReactionsReactionCategorySlugParamsReaction = "like"
-	Love      PutReactionsReactionCategorySlugParamsReaction = "love"
-	Mindblown PutReactionsReactionCategorySlugParamsReaction = "mindblown"
-	Puzzling  PutReactionsReactionCategorySlugParamsReaction = "puzzling"
-)
+// GetReactionsParams defines parameters for GetReactions.
+type GetReactionsParams struct {
+	// Path The path of the content.
+	Path string `form:"path" json:"path"`
+}
 
-// Defines values for PutReactionsReactionCategorySlugParamsCategory.
-const (
-	PutReactionsReactionCategorySlugParamsCategoryArticles PutReactionsReactionCategorySlugParamsCategory = "articles"
-	PutReactionsReactionCategorySlugParamsCategorySnippets PutReactionsReactionCategorySlugParamsCategory = "snippets"
-)
+// PutReactionsParams defines parameters for PutReactions.
+type PutReactionsParams struct {
+	// Path The path of the content.
+	Path string `form:"path" json:"path"`
 
-// Defines values for GetViewsCategorySlugParamsCategory.
-const (
-	GetViewsCategorySlugParamsCategoryArticles GetViewsCategorySlugParamsCategory = "articles"
-	GetViewsCategorySlugParamsCategorySnippets GetViewsCategorySlugParamsCategory = "snippets"
-)
+	// Reaction The reaction type.
+	Reaction PutReactionsParamsReaction `form:"reaction" json:"reaction"`
+}
 
-// Defines values for PutViewsCategorySlugParamsCategory.
-const (
-	PutViewsCategorySlugParamsCategoryArticles PutViewsCategorySlugParamsCategory = "articles"
-	PutViewsCategorySlugParamsCategorySnippets PutViewsCategorySlugParamsCategory = "snippets"
-)
+// PutReactionsParamsReaction defines parameters for PutReactions.
+type PutReactionsParamsReaction string
 
-// GetReactionsCategorySlugParamsCategory defines parameters for GetReactionsCategorySlug.
-type GetReactionsCategorySlugParamsCategory string
+// GetViewsParams defines parameters for GetViews.
+type GetViewsParams struct {
+	// Path The path of the content.
+	Path string `form:"path" json:"path"`
+}
 
-// PutReactionsReactionCategorySlugParamsReaction defines parameters for PutReactionsReactionCategorySlug.
-type PutReactionsReactionCategorySlugParamsReaction string
-
-// PutReactionsReactionCategorySlugParamsCategory defines parameters for PutReactionsReactionCategorySlug.
-type PutReactionsReactionCategorySlugParamsCategory string
-
-// GetViewsCategorySlugParamsCategory defines parameters for GetViewsCategorySlug.
-type GetViewsCategorySlugParamsCategory string
-
-// PutViewsCategorySlugParamsCategory defines parameters for PutViewsCategorySlug.
-type PutViewsCategorySlugParamsCategory string
+// PutViewsParams defines parameters for PutViews.
+type PutViewsParams struct {
+	// Path The path of the content.
+	Path string `form:"path" json:"path"`
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get reaction counts
-	// (GET /reactions/{category}/{slug})
-	GetReactionsCategorySlug(w http.ResponseWriter, r *http.Request, category GetReactionsCategorySlugParamsCategory, slug string)
+	// (GET /reactions)
+	GetReactions(w http.ResponseWriter, r *http.Request, params GetReactionsParams)
 	// Increment reaction count
-	// (PUT /reactions/{reaction}/{category}/{slug})
-	PutReactionsReactionCategorySlug(w http.ResponseWriter, r *http.Request, reaction PutReactionsReactionCategorySlugParamsReaction, category PutReactionsReactionCategorySlugParamsCategory, slug string)
+	// (PUT /reactions)
+	PutReactions(w http.ResponseWriter, r *http.Request, params PutReactionsParams)
 	// Get view count
-	// (GET /views/{category}/{slug})
-	GetViewsCategorySlug(w http.ResponseWriter, r *http.Request, category GetViewsCategorySlugParamsCategory, slug string)
+	// (GET /views)
+	GetViews(w http.ResponseWriter, r *http.Request, params GetViewsParams)
 	// Increment view count
-	// (PUT /views/{category}/{slug})
-	PutViewsCategorySlug(w http.ResponseWriter, r *http.Request, category PutViewsCategorySlugParamsCategory, slug string)
+	// (PUT /views)
+	PutViews(w http.ResponseWriter, r *http.Request, params PutViewsParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -87,31 +78,31 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetReactionsCategorySlug operation middleware
-func (siw *ServerInterfaceWrapper) GetReactionsCategorySlug(w http.ResponseWriter, r *http.Request) {
+// GetReactions operation middleware
+func (siw *ServerInterfaceWrapper) GetReactions(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "category" -------------
-	var category GetReactionsCategorySlugParamsCategory
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetReactionsParams
 
-	err = runtime.BindStyledParameterWithOptions("simple", "category", r.PathValue("category"), &category, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "category", Err: err})
+	// ------------- Required query parameter "path" -------------
+
+	if paramValue := r.URL.Query().Get("path"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "path"})
 		return
 	}
 
-	// ------------- Path parameter "slug" -------------
-	var slug string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "slug", r.PathValue("slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindQueryParameter("form", true, true, "path", r.URL.Query(), &params.Path)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "path", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetReactionsCategorySlug(w, r, category, slug)
+		siw.Handler.GetReactions(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -121,40 +112,46 @@ func (siw *ServerInterfaceWrapper) GetReactionsCategorySlug(w http.ResponseWrite
 	handler.ServeHTTP(w, r)
 }
 
-// PutReactionsReactionCategorySlug operation middleware
-func (siw *ServerInterfaceWrapper) PutReactionsReactionCategorySlug(w http.ResponseWriter, r *http.Request) {
+// PutReactions operation middleware
+func (siw *ServerInterfaceWrapper) PutReactions(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "reaction" -------------
-	var reaction PutReactionsReactionCategorySlugParamsReaction
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutReactionsParams
 
-	err = runtime.BindStyledParameterWithOptions("simple", "reaction", r.PathValue("reaction"), &reaction, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	// ------------- Required query parameter "path" -------------
+
+	if paramValue := r.URL.Query().Get("path"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "path"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "path", r.URL.Query(), &params.Path)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "path", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "reaction" -------------
+
+	if paramValue := r.URL.Query().Get("reaction"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "reaction"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "reaction", r.URL.Query(), &params.Reaction)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reaction", Err: err})
 		return
 	}
 
-	// ------------- Path parameter "category" -------------
-	var category PutReactionsReactionCategorySlugParamsCategory
-
-	err = runtime.BindStyledParameterWithOptions("simple", "category", r.PathValue("category"), &category, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "category", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "slug" -------------
-	var slug string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "slug", r.PathValue("slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutReactionsReactionCategorySlug(w, r, reaction, category, slug)
+		siw.Handler.PutReactions(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -164,31 +161,31 @@ func (siw *ServerInterfaceWrapper) PutReactionsReactionCategorySlug(w http.Respo
 	handler.ServeHTTP(w, r)
 }
 
-// GetViewsCategorySlug operation middleware
-func (siw *ServerInterfaceWrapper) GetViewsCategorySlug(w http.ResponseWriter, r *http.Request) {
+// GetViews operation middleware
+func (siw *ServerInterfaceWrapper) GetViews(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "category" -------------
-	var category GetViewsCategorySlugParamsCategory
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetViewsParams
 
-	err = runtime.BindStyledParameterWithOptions("simple", "category", r.PathValue("category"), &category, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "category", Err: err})
+	// ------------- Required query parameter "path" -------------
+
+	if paramValue := r.URL.Query().Get("path"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "path"})
 		return
 	}
 
-	// ------------- Path parameter "slug" -------------
-	var slug string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "slug", r.PathValue("slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindQueryParameter("form", true, true, "path", r.URL.Query(), &params.Path)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "path", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetViewsCategorySlug(w, r, category, slug)
+		siw.Handler.GetViews(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -198,31 +195,31 @@ func (siw *ServerInterfaceWrapper) GetViewsCategorySlug(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// PutViewsCategorySlug operation middleware
-func (siw *ServerInterfaceWrapper) PutViewsCategorySlug(w http.ResponseWriter, r *http.Request) {
+// PutViews operation middleware
+func (siw *ServerInterfaceWrapper) PutViews(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "category" -------------
-	var category PutViewsCategorySlugParamsCategory
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutViewsParams
 
-	err = runtime.BindStyledParameterWithOptions("simple", "category", r.PathValue("category"), &category, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "category", Err: err})
+	// ------------- Required query parameter "path" -------------
+
+	if paramValue := r.URL.Query().Get("path"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "path"})
 		return
 	}
 
-	// ------------- Path parameter "slug" -------------
-	var slug string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "slug", r.PathValue("slug"), &slug, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindQueryParameter("form", true, true, "path", r.URL.Query(), &params.Path)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "slug", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "path", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutViewsCategorySlug(w, r, category, slug)
+		siw.Handler.PutViews(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -352,95 +349,90 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("GET "+options.BaseURL+"/reactions/{category}/{slug}", wrapper.GetReactionsCategorySlug)
-	m.HandleFunc("PUT "+options.BaseURL+"/reactions/{reaction}/{category}/{slug}", wrapper.PutReactionsReactionCategorySlug)
-	m.HandleFunc("GET "+options.BaseURL+"/views/{category}/{slug}", wrapper.GetViewsCategorySlug)
-	m.HandleFunc("PUT "+options.BaseURL+"/views/{category}/{slug}", wrapper.PutViewsCategorySlug)
+	m.HandleFunc("GET "+options.BaseURL+"/reactions", wrapper.GetReactions)
+	m.HandleFunc("PUT "+options.BaseURL+"/reactions", wrapper.PutReactions)
+	m.HandleFunc("GET "+options.BaseURL+"/views", wrapper.GetViews)
+	m.HandleFunc("PUT "+options.BaseURL+"/views", wrapper.PutViews)
 
 	return m
 }
 
-type GetReactionsCategorySlugRequestObject struct {
-	Category GetReactionsCategorySlugParamsCategory `json:"category"`
-	Slug     string                                 `json:"slug"`
+type GetReactionsRequestObject struct {
+	Params GetReactionsParams
 }
 
-type GetReactionsCategorySlugResponseObject interface {
-	VisitGetReactionsCategorySlugResponse(w http.ResponseWriter) error
+type GetReactionsResponseObject interface {
+	VisitGetReactionsResponse(w http.ResponseWriter) error
 }
 
-type GetReactionsCategorySlug200JSONResponse struct {
+type GetReactions200JSONResponse struct {
 	Like      *int `json:"like,omitempty"`
 	Love      *int `json:"love,omitempty"`
 	Mindblown *int `json:"mindblown,omitempty"`
 	Puzzling  *int `json:"puzzling,omitempty"`
 }
 
-func (response GetReactionsCategorySlug200JSONResponse) VisitGetReactionsCategorySlugResponse(w http.ResponseWriter) error {
+func (response GetReactions200JSONResponse) VisitGetReactionsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutReactionsReactionCategorySlugRequestObject struct {
-	Reaction PutReactionsReactionCategorySlugParamsReaction `json:"reaction"`
-	Category PutReactionsReactionCategorySlugParamsCategory `json:"category"`
-	Slug     string                                         `json:"slug"`
+type PutReactionsRequestObject struct {
+	Params PutReactionsParams
 }
 
-type PutReactionsReactionCategorySlugResponseObject interface {
-	VisitPutReactionsReactionCategorySlugResponse(w http.ResponseWriter) error
+type PutReactionsResponseObject interface {
+	VisitPutReactionsResponse(w http.ResponseWriter) error
 }
 
-type PutReactionsReactionCategorySlug200JSONResponse struct {
+type PutReactions200JSONResponse struct {
 	Like      *int `json:"like,omitempty"`
 	Love      *int `json:"love,omitempty"`
 	Mindblown *int `json:"mindblown,omitempty"`
 	Puzzling  *int `json:"puzzling,omitempty"`
 }
 
-func (response PutReactionsReactionCategorySlug200JSONResponse) VisitPutReactionsReactionCategorySlugResponse(w http.ResponseWriter) error {
+func (response PutReactions200JSONResponse) VisitPutReactionsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetViewsCategorySlugRequestObject struct {
-	Category GetViewsCategorySlugParamsCategory `json:"category"`
-	Slug     string                             `json:"slug"`
+type GetViewsRequestObject struct {
+	Params GetViewsParams
 }
 
-type GetViewsCategorySlugResponseObject interface {
-	VisitGetViewsCategorySlugResponse(w http.ResponseWriter) error
+type GetViewsResponseObject interface {
+	VisitGetViewsResponse(w http.ResponseWriter) error
 }
 
-type GetViewsCategorySlug200JSONResponse struct {
+type GetViews200JSONResponse struct {
 	Views *int `json:"views,omitempty"`
 }
 
-func (response GetViewsCategorySlug200JSONResponse) VisitGetViewsCategorySlugResponse(w http.ResponseWriter) error {
+func (response GetViews200JSONResponse) VisitGetViewsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutViewsCategorySlugRequestObject struct {
-	Category PutViewsCategorySlugParamsCategory `json:"category"`
-	Slug     string                             `json:"slug"`
+type PutViewsRequestObject struct {
+	Params PutViewsParams
 }
 
-type PutViewsCategorySlugResponseObject interface {
-	VisitPutViewsCategorySlugResponse(w http.ResponseWriter) error
+type PutViewsResponseObject interface {
+	VisitPutViewsResponse(w http.ResponseWriter) error
 }
 
-type PutViewsCategorySlug200JSONResponse struct {
+type PutViews200JSONResponse struct {
 	Views *int `json:"views,omitempty"`
 }
 
-func (response PutViewsCategorySlug200JSONResponse) VisitPutViewsCategorySlugResponse(w http.ResponseWriter) error {
+func (response PutViews200JSONResponse) VisitPutViewsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -450,17 +442,17 @@ func (response PutViewsCategorySlug200JSONResponse) VisitPutViewsCategorySlugRes
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get reaction counts
-	// (GET /reactions/{category}/{slug})
-	GetReactionsCategorySlug(ctx context.Context, request GetReactionsCategorySlugRequestObject) (GetReactionsCategorySlugResponseObject, error)
+	// (GET /reactions)
+	GetReactions(ctx context.Context, request GetReactionsRequestObject) (GetReactionsResponseObject, error)
 	// Increment reaction count
-	// (PUT /reactions/{reaction}/{category}/{slug})
-	PutReactionsReactionCategorySlug(ctx context.Context, request PutReactionsReactionCategorySlugRequestObject) (PutReactionsReactionCategorySlugResponseObject, error)
+	// (PUT /reactions)
+	PutReactions(ctx context.Context, request PutReactionsRequestObject) (PutReactionsResponseObject, error)
 	// Get view count
-	// (GET /views/{category}/{slug})
-	GetViewsCategorySlug(ctx context.Context, request GetViewsCategorySlugRequestObject) (GetViewsCategorySlugResponseObject, error)
+	// (GET /views)
+	GetViews(ctx context.Context, request GetViewsRequestObject) (GetViewsResponseObject, error)
 	// Increment view count
-	// (PUT /views/{category}/{slug})
-	PutViewsCategorySlug(ctx context.Context, request PutViewsCategorySlugRequestObject) (PutViewsCategorySlugResponseObject, error)
+	// (PUT /views)
+	PutViews(ctx context.Context, request PutViewsRequestObject) (PutViewsResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -492,26 +484,25 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// GetReactionsCategorySlug operation middleware
-func (sh *strictHandler) GetReactionsCategorySlug(w http.ResponseWriter, r *http.Request, category GetReactionsCategorySlugParamsCategory, slug string) {
-	var request GetReactionsCategorySlugRequestObject
+// GetReactions operation middleware
+func (sh *strictHandler) GetReactions(w http.ResponseWriter, r *http.Request, params GetReactionsParams) {
+	var request GetReactionsRequestObject
 
-	request.Category = category
-	request.Slug = slug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetReactionsCategorySlug(ctx, request.(GetReactionsCategorySlugRequestObject))
+		return sh.ssi.GetReactions(ctx, request.(GetReactionsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetReactionsCategorySlug")
+		handler = middleware(handler, "GetReactions")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetReactionsCategorySlugResponseObject); ok {
-		if err := validResponse.VisitGetReactionsCategorySlugResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetReactionsResponseObject); ok {
+		if err := validResponse.VisitGetReactionsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -519,27 +510,25 @@ func (sh *strictHandler) GetReactionsCategorySlug(w http.ResponseWriter, r *http
 	}
 }
 
-// PutReactionsReactionCategorySlug operation middleware
-func (sh *strictHandler) PutReactionsReactionCategorySlug(w http.ResponseWriter, r *http.Request, reaction PutReactionsReactionCategorySlugParamsReaction, category PutReactionsReactionCategorySlugParamsCategory, slug string) {
-	var request PutReactionsReactionCategorySlugRequestObject
+// PutReactions operation middleware
+func (sh *strictHandler) PutReactions(w http.ResponseWriter, r *http.Request, params PutReactionsParams) {
+	var request PutReactionsRequestObject
 
-	request.Reaction = reaction
-	request.Category = category
-	request.Slug = slug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PutReactionsReactionCategorySlug(ctx, request.(PutReactionsReactionCategorySlugRequestObject))
+		return sh.ssi.PutReactions(ctx, request.(PutReactionsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutReactionsReactionCategorySlug")
+		handler = middleware(handler, "PutReactions")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PutReactionsReactionCategorySlugResponseObject); ok {
-		if err := validResponse.VisitPutReactionsReactionCategorySlugResponse(w); err != nil {
+	} else if validResponse, ok := response.(PutReactionsResponseObject); ok {
+		if err := validResponse.VisitPutReactionsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -547,26 +536,25 @@ func (sh *strictHandler) PutReactionsReactionCategorySlug(w http.ResponseWriter,
 	}
 }
 
-// GetViewsCategorySlug operation middleware
-func (sh *strictHandler) GetViewsCategorySlug(w http.ResponseWriter, r *http.Request, category GetViewsCategorySlugParamsCategory, slug string) {
-	var request GetViewsCategorySlugRequestObject
+// GetViews operation middleware
+func (sh *strictHandler) GetViews(w http.ResponseWriter, r *http.Request, params GetViewsParams) {
+	var request GetViewsRequestObject
 
-	request.Category = category
-	request.Slug = slug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetViewsCategorySlug(ctx, request.(GetViewsCategorySlugRequestObject))
+		return sh.ssi.GetViews(ctx, request.(GetViewsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetViewsCategorySlug")
+		handler = middleware(handler, "GetViews")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetViewsCategorySlugResponseObject); ok {
-		if err := validResponse.VisitGetViewsCategorySlugResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetViewsResponseObject); ok {
+		if err := validResponse.VisitGetViewsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -574,26 +562,25 @@ func (sh *strictHandler) GetViewsCategorySlug(w http.ResponseWriter, r *http.Req
 	}
 }
 
-// PutViewsCategorySlug operation middleware
-func (sh *strictHandler) PutViewsCategorySlug(w http.ResponseWriter, r *http.Request, category PutViewsCategorySlugParamsCategory, slug string) {
-	var request PutViewsCategorySlugRequestObject
+// PutViews operation middleware
+func (sh *strictHandler) PutViews(w http.ResponseWriter, r *http.Request, params PutViewsParams) {
+	var request PutViewsRequestObject
 
-	request.Category = category
-	request.Slug = slug
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PutViewsCategorySlug(ctx, request.(PutViewsCategorySlugRequestObject))
+		return sh.ssi.PutViews(ctx, request.(PutViewsRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutViewsCategorySlug")
+		handler = middleware(handler, "PutViews")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PutViewsCategorySlugResponseObject); ok {
-		if err := validResponse.VisitPutViewsCategorySlugResponse(w); err != nil {
+	} else if validResponse, ok := response.(PutViewsResponseObject); ok {
+		if err := validResponse.VisitPutViewsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

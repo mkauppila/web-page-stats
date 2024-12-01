@@ -28,13 +28,7 @@ func main() {
 
 	handler := handler.NewHandler(vc, rc)
 	mux := http.NewServeMux()
-	// db, err := database.NewDatabase()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// db.Buu()
 
-	// get an `http.Handler` that we can use
 	h := api.HandlerFromMux(handler, mux)
 
 	s := &http.Server{

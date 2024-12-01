@@ -1,8 +1,8 @@
-generate:
-	go generate ./...
-
 build:
 	go build ./...
+
+generate:
+	go generate ./...
 
 deps:
 	go mod download
