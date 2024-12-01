@@ -21,7 +21,7 @@ func CreateReactionCounter(db *sql.DB) *ReactionCounter {
 	}
 }
 
-func (v *ReactionCounter) GetCount(category, slug string) (handler.ReactionCounts, error) {
+func (v *ReactionCounter) GetCount(ctx context.Context, category, slug string) (handler.ReactionCounts, error) {
 	sql := `
 		SELECT love, like, mindblown, puzzling
   		  FROM reaction_count
@@ -30,7 +30,7 @@ func (v *ReactionCounter) GetCount(category, slug string) (handler.ReactionCount
 
 	var love, like, mindblown, puzzling int
 	err := v.db.
-		QueryRowContext(context.Background(), sql, category, slug).
+		QueryRowContext(ctx, sql, category, slug).
 		Scan(&love, &like, &mindblown, &puzzling)
 	if err != nil {
 		return handler.ReactionCounts{}, fmt.Errorf("ReactionCounter.GetCount: %w", err)
@@ -44,7 +44,7 @@ func (v *ReactionCounter) GetCount(category, slug string) (handler.ReactionCount
 	}, nil
 }
 
-func (v *ReactionCounter) Update(category, slug, reaction string) (handler.ReactionCounts, error) {
+func (v *ReactionCounter) Update(ctx context.Context, category, slug, reaction string) (handler.ReactionCounts, error) {
 	var sql string
 	switch reaction {
 	case "love":
@@ -58,7 +58,8 @@ func (v *ReactionCounter) Update(category, slug, reaction string) (handler.React
 	}
 
 	var love, like, mindblown, puzzling int
-	err := v.db.QueryRowContext(context.Background(), sql, category, slug).
+	err := v.db.
+		QueryRowContext(ctx, sql, category, slug).
 		Scan(&love, &like, &mindblown, &puzzling)
 
 	if err != nil {

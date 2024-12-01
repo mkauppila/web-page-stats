@@ -18,7 +18,7 @@ func CreateViewCounter(db *sql.DB) *ViewCounter {
 	}
 }
 
-func (v *ViewCounter) GetCount(category, slug string) (handler.ViewCount, error) {
+func (v *ViewCounter) GetCount(ctx context.Context, category, slug string) (handler.ViewCount, error) {
 	sql := `
 		SELECT count 
   		  FROM view_count 
@@ -27,7 +27,7 @@ func (v *ViewCounter) GetCount(category, slug string) (handler.ViewCount, error)
 
 	var counts int
 	err := v.db.
-		QueryRowContext(context.Background(), sql, category, slug).
+		QueryRowContext(ctx, sql, category, slug).
 		Scan(&counts)
 	if err != nil {
 		return handler.ViewCount{}, fmt.Errorf("viewCounter.GetCount: %w", err)
@@ -38,7 +38,7 @@ func (v *ViewCounter) GetCount(category, slug string) (handler.ViewCount, error)
 	}, nil
 }
 
-func (v *ViewCounter) Update(category, slug string) (handler.ViewCount, error) {
+func (v *ViewCounter) Update(ctx context.Context, category, slug string) (handler.ViewCount, error) {
 	sql := `
 		INSERT INTO view_count 
 			 VALUES (?, ?, 1)
@@ -48,7 +48,7 @@ func (v *ViewCounter) Update(category, slug string) (handler.ViewCount, error) {
 
 	var counts int
 	err := v.db.
-		QueryRowContext(context.Background(), sql, category, slug).
+		QueryRowContext(ctx, sql, category, slug).
 		Scan(&counts)
 	if err != nil {
 		return handler.ViewCount{}, fmt.Errorf("viewCounter.Update: %w", err)
