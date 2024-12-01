@@ -3,6 +3,7 @@ package counters
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/mkauppila/web-page-stats/internal/handler"
 )
@@ -25,7 +26,7 @@ func (v *ViewCounter) GetCount(category, slug string) (handler.ViewCount, error)
 	       AND slug = ?`
 	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
 	if err != nil {
-		return handler.ViewCount{}, err
+		return handler.ViewCount{}, fmt.Errorf("viewCounter.GetCount: %w", err)
 	}
 	defer results.Close()
 
@@ -48,7 +49,7 @@ func (v *ViewCounter) Update(category, slug string) (handler.ViewCount, error) {
 	  	  RETURNING count`
 	results, err := v.db.QueryContext(context.Background(), sql, category, slug)
 	if err != nil {
-		return handler.ViewCount{}, err
+		return handler.ViewCount{}, fmt.Errorf("viewCounter.Update: %w", err)
 	}
 	defer results.Close()
 
